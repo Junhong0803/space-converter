@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>空白換行轉換器 | 買房宏綠燈</title>
+  <meta name="description" content="讓你的 IG / Threads / Facebook 貼文換行完整！自動在空行處插入零寬度空白 + 中文英文排版優化，純前端免註冊。" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:  '#fcf5f5',
+              100: '#fde8ea',
+              200: '#fbd1d4',
+              300: '#f8a5ac',
+              500: '#F2525A',
+              600: '#dc3d45',
+              700: '#b02a32',
+              900: '#5c1316',
+            },
+            accent: {
+              50:  '#e6f5f5',
+              100: '#c6e8e8',
+              500: '#0E9A9A',
+              600: '#0c8484',
+              700: '#0a6e6e',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    textarea { font-family: 'Noto Sans TC', -apple-system, sans-serif; }
+    button { transition: all 0.15s ease; }
+    /* 頂部漸層背景 — 白到淡粉 */
+    .hero-bg {
+      background: linear-gradient(180deg, #ffffff 0%, #fcf5f5 100%);
+    }
+    /* 預覽區保留換行與空格 */
+    .fb-preview { white-space: pre-wrap; word-wrap: break-word; }
+    /* Toast 動畫 */
+    .toast {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- ============ Header（LOGO + 工具名 + 導航 + CTA） ============ -->
+  <header class="bg-white/90 backdrop-blur border-b border-slate-100 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-4">
+      <!-- 左：LOGO + 工具名/副標 -->
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="https://www.dreamhomes.com.tw/" target="_blank" rel="noopener" class="shrink-0">
+          <img src="assets/logo.png" alt="買房宏綠燈 Dream homes" class="h-10 sm:h-11 w-auto" />
+        </a>
+        <div class="leading-tight min-w-0 hidden sm:block">
+          <div class="font-bold text-slate-900 text-base sm:text-lg truncate">空白換行轉換器</div>
+          <div class="text-xs text-slate-500 truncate">買房宏綠燈 ｜ 誠實透明的房屋買賣</div>
+        </div>
+      </div>
+
+      <!-- 右：導航 + CTA -->
+      <nav class="flex items-center gap-3 sm:gap-5 text-sm">
+        <a href="https://www.dreamhomes.com.tw/" target="_blank" rel="noopener"
+           class="text-slate-600 hover:text-brand-500 font-medium transition">首頁</a>
+        <a href="https://www.dreamhomes.com.tw/all-articles/" target="_blank" rel="noopener"
+           class="hidden md:inline text-slate-600 hover:text-brand-500 font-medium transition">所有文章</a>
+        <a href="https://www.dreamhomes.com.tw/a888/" target="_blank" rel="noopener"
+           class="hidden md:inline text-slate-600 hover:text-brand-500 font-medium transition">客戶好評</a>
+        <a href="https://www.dreamhomes.com.tw/about-me/" target="_blank" rel="noopener"
+           class="hidden lg:inline text-slate-600 hover:text-brand-500 font-medium transition">關於我</a>
+        <a href="https://www.dreamhomes.com.tw/signing-record/" target="_blank" rel="noopener"
+           class="hidden lg:inline text-slate-600 hover:text-brand-500 font-medium transition">成交紀錄</a>
+        <a href="https://m.facebook.com/100063642986563/" target="_blank" rel="noopener"
+           class="text-slate-600 hover:text-brand-500 font-medium transition">Facebook</a>
+        <a href="https://lin.ee/WvBO6U5" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-full font-medium shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          <span class="hidden xs:inline sm:inline">聯絡我</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero-bg">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-8 text-center">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-snug tracking-tight">
+        <span class="inline-block">空白換行轉換器 <span class="text-slate-400 font-normal mx-1">—</span></span>
+        <span class="block mt-3">讓社群貼文<span class="text-accent-500">更好閱讀</span>的排版、<span class="text-brand-500">換行工具</span></span>
+      </h1>
+      <p class="mt-6 text-slate-600 leading-loose max-w-3xl mx-auto text-sm sm:text-base px-2">
+        讓你的換行完整！自動在空行處插入零寬度空白，讓 Facebook、Instagram、Threads、WordPress⋯⋯等平台的貼文行距更舒適；
+        還有字數統計 &amp; 中文和英文數字符號的排版優化功能。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ Tool ============ -->
+  <main class="flex-1 px-4 sm:px-6 pb-12">
+    <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-6">
+
+      <!-- 左：輸入卡 -->
+      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)] p-5 sm:p-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-slate-900">在此輸入你的文字</h2>
+          <span id="inputCount" class="text-xs text-slate-400">0 字</span>
+        </div>
+        <div class="rounded-2xl border border-slate-200 overflow-hidden focus-within:border-accent-500 focus-within:ring-2 focus-within:ring-accent-500/20 transition">
+          <textarea id="input"
+            class="w-full p-4 sm:p-5 resize-none outline-none text-sm sm:text-[15px] leading-8 min-h-[260px]"
+            placeholder="在這裡貼上你要發佈的貼文內容⋯&#10;&#10;換行的地方會自動加入空白字元&#10;&#10;讓你的文字間距更大更好閱讀！"></textarea>
+        </div>
+
+        <!-- 三個按鈕 -->
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          <button id="btnZwsp" class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-accent-500 hover:bg-accent-600 text-white font-semibold shadow-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 12h16"/></svg>
+            空行轉換
+          </button>
+          <button id="btnCjk" class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-brand-300 hover:bg-brand-500 text-white font-semibold shadow-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v3h6m-3 0v13M18 20l-4-10-4 10m1.5-3.5h5"/></svg>
+            優化中文排版
+          </button>
+          <button id="btnReset" title="清除重設" class="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-full border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+
+        <p class="mt-3 text-xs text-slate-400">按「空行轉換」或「優化中文排版」會自動複製結果到剪貼簿，可直接貼到社群 App。</p>
+      </div>
+
+      <!-- 右：FB 貼文預覽 -->
+      <div>
+        <h2 class="font-bold text-slate-900 mb-3 px-1">Facebook 貼文預覽</h2>
+        <div class="bg-[#1c2128] rounded-3xl overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.2)]">
+          <!-- 使用前 / 使用後切換 -->
+          <div class="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+            <div class="flex gap-1 bg-white/5 rounded-full p-1 text-xs">
+              <button data-mode="before" class="mode-btn px-3 py-1 rounded-full text-white/60 font-medium">使用前</button>
+              <button data-mode="after" class="mode-btn px-3 py-1 rounded-full bg-white/15 text-white font-medium">使用後</button>
+            </div>
+            <span class="text-[11px] text-white/40">即時預覽</span>
+          </div>
+
+          <!-- FB 貼文卡 -->
+          <div class="p-5">
+            <!-- 作者列 -->
+            <div class="flex items-center gap-3 mb-3">
+              <img src="assets/logo-icon.png" alt="買房宏綠燈" class="w-11 h-11 rounded-full object-cover bg-white shrink-0 shadow-sm ring-2 ring-white/10" />
+              <div class="leading-tight">
+                <div class="flex items-center gap-1.5 text-white font-semibold text-[15px]">
+                  買房宏綠燈
+                  <svg class="w-4 h-4 text-accent-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 9 5H5v4L2 12l3 3v4h4l3 3 3-3h4v-4l3-3-3-3V5h-4zm-1 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 8z"/></svg>
+                </div>
+                <div class="text-white/50 text-xs mt-0.5">剛剛 · 🌐</div>
+              </div>
+            </div>
+            <!-- 貼文內容 -->
+            <div id="fbPreview" class="fb-preview text-white text-[15px] leading-8 min-h-[200px] text-opacity-90">
+              <span class="text-white/40 italic">在左側輸入文字後，這裡會顯示預覽⋯</span>
+            </div>
+          </div>
+
+          <!-- 按讚列 -->
+          <div class="border-t border-white/10 px-2 py-1.5 flex items-center justify-around text-white/60 text-sm">
+            <button class="flex items-center gap-1.5 px-4 py-2 rounded-lg hover:bg-white/5">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7V10l4-8 .9.45a2 2 0 0 1 1.1 2.43z"/></svg>
+              讚
+            </button>
+            <button class="flex items-center gap-1.5 px-4 py-2 rounded-lg hover:bg-white/5">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              留言
+            </button>
+          </div>
+        </div>
+
+        <!-- 預覽下方說明 bar -->
+        <div class="mt-3 bg-slate-50 rounded-2xl px-5 py-3 text-center text-xs sm:text-sm text-slate-500">
+          在左側輸入文字，按鈕轉換後即時預覽 Facebook 顯示效果
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 3 步說明 ============ -->
+    <section class="max-w-6xl mx-auto mt-14 grid sm:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-6">
+        <div class="w-10 h-10 rounded-full bg-accent-50 text-accent-600 flex items-center justify-center font-bold mb-3">1</div>
+        <h3 class="font-bold text-slate-900 mb-1">貼上原文</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">把你排好版的貼文直接貼進左邊的輸入框，空行該空就空。</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-6">
+        <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold mb-3">2</div>
+        <h3 class="font-bold text-slate-900 mb-1">選擇轉換模式</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">按「空行轉換」保留空行；或按「優化中文排版」自動補半形空格。</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-6">
+        <div class="w-10 h-10 rounded-full bg-accent-50 text-accent-600 flex items-center justify-center font-bold mb-3">3</div>
+        <h3 class="font-bold text-slate-900 mb-1">貼到社群</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">按鈕會自動複製，直接到 IG / Threads / FB 貼上，排版完整保留。</p>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="max-w-6xl mx-auto mt-10 bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7">
+      <h2 class="font-bold text-slate-900 text-lg mb-4">常見問題</h2>
+      <div class="space-y-3 text-sm">
+        <details class="group border-b border-slate-100 pb-3 last:border-0">
+          <summary class="cursor-pointer font-semibold text-slate-800 py-1 flex items-center justify-between">
+            為什麼 IG / Threads 貼文的空行會消失？
+            <span class="text-slate-400 group-open:rotate-180 transition">▼</span>
+          </summary>
+          <p class="mt-2 text-slate-600 leading-loose">這些平台會自動把「完全空白的行」過濾掉。只要那行有任何字元（包括看不見的零寬度空白 U+200B），就會被保留。</p>
+        </details>
+        <details class="group border-b border-slate-100 pb-3 last:border-0">
+          <summary class="cursor-pointer font-semibold text-slate-800 py-1 flex items-center justify-between">
+            什麼是「優化中文排版」？
+            <span class="text-slate-400 group-open:rotate-180 transition">▼</span>
+          </summary>
+          <p class="mt-2 text-slate-600 leading-loose">自動在中文和英文/數字之間加一個半形空格，例如「我有 3 個建案、看 Zillow 找資料」— 視覺上更舒服、閱讀更順，這是做內容的人普遍公認的排版習慣。</p>
+        </details>
+        <details class="group border-b border-slate-100 pb-3 last:border-0">
+          <summary class="cursor-pointer font-semibold text-slate-800 py-1 flex items-center justify-between">
+            零寬度空白會不會影響 SEO？
+            <span class="text-slate-400 group-open:rotate-180 transition">▼</span>
+          </summary>
+          <p class="mt-2 text-slate-600 leading-loose">幾乎不會。它是 Unicode 標準字元，搜尋引擎會忽略它。</p>
+        </details>
+        <details class="group">
+          <summary class="cursor-pointer font-semibold text-slate-800 py-1 flex items-center justify-between">
+            我貼回編輯器再複製一次，排版還會在嗎？
+            <span class="text-slate-400 group-open:rotate-180 transition">▼</span>
+          </summary>
+          <p class="mt-2 text-slate-600 leading-loose">大部分編輯器都會保留。但如果貼到 Word 或某些 rich text 編輯器可能被清掉 — 建議從這裡複製後直接貼到社群 App 發文。</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="bg-slate-900 text-white mt-8">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+      <!-- 創立初衷 -->
+      <div>
+        <h3 class="text-xl font-bold mb-6">創立初衷</h3>
+        <p class="text-sm leading-loose text-slate-200 mb-4">希望能讓房屋買賣是很透明公開、讓人放心，並且簡單化。</p>
+        <p class="text-sm leading-loose text-slate-200">不怕被錯誤資訊引導，讓對的事情，持續往善的方向循環下去。</p>
+      </div>
+      <!-- 買房宏綠燈 -->
+      <div>
+        <h3 class="text-xl font-bold mb-6">買房宏綠燈</h3>
+        <ul class="space-y-4 text-sm">
+          <li class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span>
+            <a href="https://www.dreamhomes.com.tw/about-me/" target="_blank" rel="noopener" class="text-slate-200 hover:text-brand-500 transition">關於我</a>
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span>
+            <span class="text-slate-200">服務【中和、永和】區域</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span>
+            <a href="https://www.dreamhomes.com.tw/signing-record/" target="_blank" rel="noopener" class="text-slate-200 hover:text-brand-500 transition">成交紀錄專區</a>
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span>
+            <a href="https://www.dreamhomes.com.tw/a888/" target="_blank" rel="noopener" class="text-slate-200 hover:text-brand-500 transition">客戶好評推薦</a>
+          </li>
+        </ul>
+      </div>
+      <!-- 服務項目 -->
+      <div>
+        <h3 class="text-xl font-bold mb-6">服務項目</h3>
+        <ul class="space-y-4 text-sm">
+          <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span><span class="text-slate-200">買房、賣房</span></li>
+          <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span><span class="text-slate-200">行情評估</span></li>
+          <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span><span class="text-slate-200">負擔稅費</span></li>
+          <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-brand-500 shrink-0"></span><span class="text-slate-200">外區服務諮詢</span></li>
+        </ul>
+      </div>
+      <!-- 聯繫我 -->
+      <div>
+        <h3 class="text-xl font-bold mb-6">聯繫我</h3>
+        <ul class="space-y-3 text-sm leading-relaxed">
+          <li>
+            <a href="https://www.facebook.com/profile.php?id=100063642986563" target="_blank" rel="noopener" class="font-semibold text-white hover:text-brand-500 transition">Facebook</a>
+            <span class="text-slate-300"> – 點選可追蹤</span>
+          </li>
+          <li><a href="https://lin.ee/WvBO6U5" target="_blank" rel="noopener" class="font-semibold text-white hover:text-brand-500 transition">Line：@ 619dvqfj</a></li>
+          <li><a href="mailto:j0987786758@gmail.com" class="font-semibold text-white hover:text-brand-500 transition break-all">j0987786758@gmail.com</a></li>
+          <li class="font-semibold text-white">買房宏綠燈</li>
+          <li class="text-slate-300 text-xs leading-relaxed pt-1">商業合作：建案開箱參訪、訪談邀約相關合作歡迎加入 Line，電子信箱討論。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-700/60">
+      <div class="max-w-6xl mx-auto px-5 sm:px-8 py-5 text-xs text-slate-400 flex flex-col sm:flex-row justify-between gap-2">
+        <div>© <span id="year"></span> <a href="https://www.dreamhomes.com.tw/" class="hover:text-brand-500" target="_blank" rel="noopener">dreamhomes.com.tw</a> · 買房宏綠燈</div>
+        <div>空白換行轉換器 · 純前端免註冊</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ Toast ============ -->
+  <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-full shadow-lg text-sm z-50">
+    <span id="toastText">已複製到剪貼簿 ✓</span>
+  </div>
+
+  <!-- ============ JS ============ -->
+  <script>
+    // 零寬度空白字元 U+200B — 肉眼不可見，但會讓社群平台保留排版
+    const ZWSP = '​';
+    const $ = (id) => document.getElementById(id);
+
+    // 在每個空行插入零寬度空白
+    function insertZwsp(text) {
+      return text
+        .split('\n')
+        .map((line) => (line.length === 0 ? ZWSP : line))
+        .join('\n');
+    }
+
+    // 中文排版優化：中文 ↔ 英文/數字 之間補半形空格
+    function optimizeCjk(text) {
+      return text
+        // 中文在前、英文/數字在後
+        .replace(/([一-龥぀-ヿ])([A-Za-z0-9@#$%&])/g, '$1 $2')
+        // 英文/數字在前、中文在後
+        .replace(/([A-Za-z0-9@#$%&\]\)])([一-龥぀-ヿ])/g, '$1 $2')
+        // 多個連續空格收斂成一個
+        .replace(/ {2,}/g, ' ');
+    }
+
+    // UI 狀態
+    let displayMode = 'after'; // 'before' 顯示原文、'after' 顯示處理後
+    let lastProcessed = '';    // 最後一次處理過的結果（for 預覽）
+
+    function renderPreview() {
+      const raw = $('input').value;
+      if (!raw.trim()) {
+        $('fbPreview').innerHTML = '<span class="text-white/40 italic">在左側輸入文字後，這裡會顯示預覽⋯</span>';
+        return;
+      }
+      const text = (displayMode === 'before') ? raw : (lastProcessed || insertZwsp(raw));
+      $('fbPreview').textContent = text;
+    }
+
+    function updateCount() {
+      $('inputCount').textContent = $('input').value.length + ' 字';
+    }
+
+    function showToast(text) {
+      $('toastText').textContent = text;
+      const t = $('toast');
+      t.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      }
+    }
+
+    // 按鈕：空行轉換
+    $('btnZwsp').addEventListener('click', async () => {
+      const raw = $('input').value;
+      if (!raw.trim()) { showToast('先貼上要轉換的文字'); return; }
+      lastProcessed = insertZwsp(raw);
+      displayMode = 'after';
+      syncModeBtns();
+      renderPreview();
+      const ok = await copyToClipboard(lastProcessed);
+      showToast(ok ? '已複製，可貼到 FB / IG ✓' : '複製失敗，請手動選取');
+    });
+
+    // 按鈕：優化中文排版
+    $('btnCjk').addEventListener('click', async () => {
+      const raw = $('input').value;
+      if (!raw.trim()) { showToast('先貼上要轉換的文字'); return; }
+      lastProcessed = insertZwsp(optimizeCjk(raw));
+      displayMode = 'after';
+      syncModeBtns();
+      renderPreview();
+      const ok = await copyToClipboard(lastProcessed);
+      showToast(ok ? '已優化並複製 ✓' : '複製失敗，請手動選取');
+    });
+
+    // 按鈕：重設
+    $('btnReset').addEventListener('click', () => {
+      $('input').value = '';
+      lastProcessed = '';
+      displayMode = 'after';
+      syncModeBtns();
+      updateCount();
+      renderPreview();
+      $('input').focus();
+    });
+
+    // 使用前 / 使用後切換
+    function syncModeBtns() {
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        const isActive = btn.dataset.mode === displayMode;
+        btn.classList.toggle('bg-white/15', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('text-white/60', !isActive);
+      });
+    }
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        displayMode = btn.dataset.mode;
+        syncModeBtns();
+        renderPreview();
+      });
+    });
+
+    // 即時：輸入時更新預覽（空行模式）
+    $('input').addEventListener('input', () => {
+      updateCount();
+      // 即時預覽用空行模式（沒按按鈕前）
+      if (!lastProcessed) {
+        renderPreview();
+      } else {
+        // 已經按過按鈕後，使用者又改輸入 → 回到即時模式
+        lastProcessed = '';
+        renderPreview();
+      }
+    });
+
+    $('year').textContent = new Date().getFullYear();
+    updateCount();
+    renderPreview();
+  </script>
+</body>
+</html>
