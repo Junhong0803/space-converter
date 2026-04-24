@@ -460,6 +460,30 @@
     $('year').textContent = new Date().getFullYear();
     updateCount();
     renderPreview();
+
+    // ===== 自動通知父頁面高度（給 WordPress iframe 嵌入用） =====
+    (function () {
+      if (window.parent === window) return; // 沒被 iframe 嵌入就不跑
+      let lastH = 0;
+      const send = () => {
+        const h = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight
+        );
+        if (h !== lastH) {
+          lastH = h;
+          window.parent.postMessage({ type: 'sc-height', height: h }, '*');
+        }
+      };
+      window.addEventListener('load', send);
+      window.addEventListener('resize', send);
+      // 內容變動（輸入、FAQ 展開、預覽更新等）即時重測
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(send).observe(document.body);
+      }
+      // 保險：每 500ms 檢查一次（應付 FAQ details 等無 resize 的情境）
+      setInterval(send, 500);
+    })();
   </script>
 </body>
 </html>
