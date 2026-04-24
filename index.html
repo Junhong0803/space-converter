@@ -15,7 +15,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Noto Sans TC"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['"PingFang TC"', '"Noto Sans TC"', '"Heiti TC"', '"Microsoft JhengHei"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
           },
           colors: {
             brand: {
@@ -41,7 +41,14 @@
     };
   </script>
   <style>
-    textarea { font-family: 'Noto Sans TC', -apple-system, sans-serif; }
+    /* 買房宏綠燈工具字型規則：PingFang TC 優先 + 寬字距 0.025em */
+    body {
+      font-family: 'PingFang TC', 'Noto Sans TC', 'Heiti TC', 'Microsoft JhengHei', system-ui, -apple-system, sans-serif;
+      letter-spacing: 0.025em;
+    }
+    h1, h2, .font-black, .font-bold { letter-spacing: 0.04em; }
+    input, button, textarea, select { font-family: inherit; letter-spacing: inherit; }
+    input::placeholder, textarea::placeholder { font-family: inherit; letter-spacing: inherit; }
     button { transition: all 0.15s ease; }
     /* 頂部漸層背景 — 白到淡粉 */
     .hero-bg {
